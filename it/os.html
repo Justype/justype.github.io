@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>linux</title>
+    <style>
+    .code{
+        border: 1px dashed;
+        padding: 20px;
+    }
+    </style>
+</head>
+<body>
+    <h1>OS</h1>
+    <h2>Windows</h2>
+    <h3><a href="https://docs.microsoft.com/zh-cn/windows/wsl/install-win10">WSL</a></h3>
+    <p>Code in powershell(admin):</p>
+        <pre class="code">Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux</pre>
+    <h2>Debian</h2>
+    <h3>mirrors</h3>
+    <p>还是用<a href="https://mirror.tuna.tsinghua.edu.cn/help/debian/">清华源</a>吧，163源没有debian 10</p>
+<pre class="code">
+# 默认注释了源码镜像以提高 apt update 速度，如有需要可自行取消注释
+deb https://mirrors.tuna.tsinghua.edu.cn/debian/ buster main contrib non-free
+# deb-src https://mirrors.tuna.tsinghua.edu.cn/debian/ buster main contrib non-free
+deb https://mirrors.tuna.tsinghua.edu.cn/debian/ buster-updates main contrib non-free
+# deb-src https://mirrors.tuna.tsinghua.edu.cn/debian/ buster-updates main contrib non-free
+deb https://mirrors.tuna.tsinghua.edu.cn/debian/ buster-backports main contrib non-free
+# deb-src https://mirrors.tuna.tsinghua.edu.cn/debian/ buster-backports main contrib non-free
+deb https://mirrors.tuna.tsinghua.edu.cn/debian-security buster/updates main contrib non-free
+# deb-src https://mirrors.tuna.tsinghua.edu.cn/debian-security buster/updates main contrib non-free
+</pre>
+
+</body>
+</html>
