@@ -16,6 +16,11 @@
     <h1>OS</h1>
     <h2>Windows</h2>
     <h3><a href="https://docs.microsoft.com/zh-cn/windows/wsl/install-win10">WSL</a></h3>
+    <h4>WSL Debian</h4>
+    <dl>
+        <dt>安装jupyter的时候，提示：/home/usr/local/bin is not in your PATH</dt>
+        <dd>export PATH=/home/usr/local/bin:$PATH</dd>
+    </dl>
     <p>Code in powershell(admin):</p>
         <pre class="code">Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux</pre>
     <h2>Debian</h2>
