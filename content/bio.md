@@ -22,13 +22,14 @@ I am now learning discrete mathematics, linear algebra, and probability theory t
 
 ## My Programming and Bioinformatics Journey
 
-I started learning coding in 2017 when I was a freshman at [HZAU](http://www.hzau.edu.cn/). At that time, I wanted to make games with Unity, so I learned C#. Ironically, I never made a game, but I learned a lot about programming and software development (Xamarin at that time, now it is .NET MAUI).
+I started learning to code back in 2017 during my first year at [HZAU](http://www.hzau.edu.cn/). I was really into the idea of making games with Unity, so I picked up C#. Ironically, I never actually made a game—but I did fall in love with programming. I ended up learning a lot about software development, especially with tools like Xamarin (which is now .NET MAUI).
 
-And in my third year, I finally learned about bioinformatics. I was fascinated by the idea of using programming to solve biological problems. Since then, I tried to learning some Python and R, but I didn't have much time to practice.
+In my third year, I stumbled across bioinformatics and was immediately hooked. The idea of using code to solve biological problems felt exciting and meaningful. I started dabbling in Python and R, though I didn’t get much hands-on time back then.
 
-In 2022, I started my master's degree in biology at [NYU](https://www.nyu.edu/). I officially started my journey as a bioinformatician. I learned Python, R, and some shell scripting. I also learned about data analysis, statistics, and machine learning. I was amazed by the power of programming in biology. During my master's degree, I start to learn about new sequencing technologies, such as single-cell sequencing and spatial transcriptomics. I want to contribute to the state-of-the-art in these fields.
+That all changed in 2022 when I started my master’s in biology at [NYU](https://www.nyu.edu/). That’s when I really dove into bioinformatics—learning Python, R, shell scripting, and getting comfortable with data analysis, statistics, and even some machine learning. I was amazed by how powerful coding can be in the world of biology. I also got introduced to cutting-edge sequencing technologies like single-cell sequencing and spatial transcriptomics, which sparked a strong interest in research.
 
-Due to various reasons, I decided to continue my studies at [McMaster](https://www.mcmaster.ca/) in 2025. I am working on single-cell sequencing and spatial transcriptomics to study glioblastoma.
+Due to various reasons, I decided to continue my studies at [McMaster](https://www.mcmaster.ca/) in 2025, where I’m now working on single-cell and spatial transcriptomics to study glioblastoma. I'm excited to keep learning and contribute to this rapidly evolving field.
+
 
 ## Further Reading
 
