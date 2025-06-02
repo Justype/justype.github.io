@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg height="800px" width="800px" version="1.1" id="_x32_" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <style type="text/css">
+	.st0{fill:#000000;}
+</style>
+  <g transform="matrix(1.954766, 0, 0, 2.24798, -366.983079, -41.267298)">
+    <path class="st0" d="M 302.28 111.726 C 291.279 102.711 282.223 93.262 275.851 82.143 C 272.667 76.572 270.147 70.562 268.393 63.886 C 266.638 57.189 265.661 49.813 265.661 41.52 L 265.66 27.9 L 244.038 27.895 L 244.028 41.516 C 244.028 54.281 246.052 65.699 249.751 75.943 C 255.293 91.351 264.613 104.051 275.757 114.949 C 286.89 125.877 299.812 135.133 313.059 144.164 C 321.691 150.044 329.862 155.838 337.193 161.842 C 348.198 170.853 357.254 180.311 363.616 191.43 C 366.801 196.992 369.325 203.005 371.08 209.691 C 372.829 216.384 373.801 223.754 373.802 232.048 L 373.807 232.053 L 373.812 232.048 L 374 239 C 374 239 395 239 395 239 L 395.435 232.053 C 395.445 219.297 393.412 207.88 389.722 197.616 C 384.174 182.212 374.859 169.527 363.721 158.614 C 352.577 147.697 339.655 138.431 326.419 129.4 C 317.771 123.523 309.61 117.731 302.28 111.726 Z" style="transform-origin: 295.154px 158.825px;"/>
+    <path class="st0" d="M 371.747 25.479 L 371.746 39.089 C 371.742 40.695 371.713 42.249 371.634 43.782 L 273.691 43.783 C 273.948 48.863 274.635 53.629 275.74 58.213 L 369.796 58.218 C 369.049 61.627 368.12 64.846 367 67.931 C 365.771 71.351 364.322 74.598 362.657 77.698 L 283.813 77.704 C 286.82 82.598 290.554 87.344 295.172 92.139 L 352.844 92.139 C 350.564 94.87 348.084 97.499 345.459 100.094 C 339.563 105.881 332.847 111.35 325.516 116.736 C 327.236 117.926 328.891 119.08 330.522 120.171 C 334.443 122.843 338.531 125.673 342.698 128.67 C 345.179 126.799 347.596 124.892 349.979 122.942 C 362.13 112.982 373.077 101.779 380.925 88.066 C 384.86 81.212 387.995 73.754 390.118 65.608 C 392.245 57.487 393.375 48.652 393.38 39.085 L 393.371 25.475 L 371.747 25.479 Z" style="transform-origin: 340.647px 55.184px;"/>
+    <path class="st0" d="M 242 239 C 242 239 264 239 263.6 239 L 263.607 229.625 L 263.593 229.621 C 263.588 228.024 263.632 226.467 263.72 224.934 L 361.643 224.932 C 361.392 219.856 360.709 215.076 359.594 210.511 L 265.554 210.513 C 266.285 207.099 267.224 203.86 268.339 200.789 C 269.577 197.37 271.011 194.117 272.682 191.02 L 351.527 191.016 C 348.525 186.117 344.79 181.38 340.172 176.585 L 282.514 176.581 C 284.794 173.859 287.255 171.211 289.889 168.626 C 295.776 162.848 302.512 157.379 309.813 151.995 C 308.103 150.796 306.443 149.646 304.822 148.546 C 300.896 145.878 296.807 143.048 292.647 140.045 C 290.185 141.918 287.759 143.824 285.375 145.774 C 273.209 155.738 262.263 166.942 254.41 180.659 C 250.504 187.504 247.355 194.977 245.222 203.114 C 243.1 211.24 241.96 220.064 241.964 229.631 L 241.974 229.631 L 242 239 Z" style=""/>
+  </g>
+  <g>
+    <ellipse style="stroke-miterlimit: 1; stroke-width: 10px; paint-order: fill; fill: none; stroke: rgb(0, 0, 0);" cx="50" cy="36" rx="10" ry="10"/>
+    <line style="fill: rgb(216, 216, 216); stroke: rgb(0, 0, 0); stroke-width: 10px; stroke-linecap: round;" x1="70" y1="256" x2="108" y2="256"/>
+    <polyline style="stroke: rgb(0, 0, 0); fill: none; stroke-width: 10px; stroke-linejoin: round;" points="110 288 50 288 50 224 110 224"/>
+    <rect x="110" y="216" width="20" height="16" style="stroke: rgb(0, 0, 0); fill: none; stroke-width: 10px; stroke-linejoin: round;"/>
+    <rect x="110" y="280" width="20" height="16" style="stroke: rgb(0, 0, 0); fill: none; stroke-width: 10px; stroke-linejoin: round;"/>
+    <rect x="110" y="248" width="20" height="16" style="stroke: rgb(0, 0, 0); fill: none; stroke-width: 10px; stroke-linejoin: round;"/>
+    <rect x="110" y="184" width="20" height="16" style="stroke: rgb(0, 0, 0); fill: none; stroke-width: 10px; stroke-linejoin: round;"/>
+    <rect x="110" y="312" width="20" height="16" style="stroke: rgb(0, 0, 0); fill: none; stroke-width: 10px; stroke-linejoin: round;"/>
+    <polyline style="stroke: rgb(0, 0, 0); fill: none; stroke-miterlimit: 5; stroke-linejoin: round; stroke-width: 10px;" points="110 192 75 192 52 46"/>
+    <polyline style="stroke: rgb(0, 0, 0); fill: none; stroke-miterlimit: 5; stroke-linejoin: round; stroke-width: 10px;" points="111 320 76 320 53 466"/>
+    <ellipse style="stroke-miterlimit: 1; stroke-width: 10px; paint-order: fill; fill: none; stroke: rgb(0, 0, 0);" cx="50" cy="476" rx="10" ry="10"/>
+  </g>
+  <g transform="matrix(-1, 0, 0, 1, 512.000023, 0.000004)" style="">
+    <ellipse style="stroke-miterlimit: 1; stroke-width: 10px; paint-order: fill; fill: none; stroke: rgb(0, 0, 0);" cx="50" cy="36" rx="10" ry="10"/>
+    <line style="fill: rgb(216, 216, 216); stroke: rgb(0, 0, 0); stroke-width: 10px; stroke-linecap: round;" x1="70" y1="256" x2="108" y2="256"/>
+    <polyline style="stroke: rgb(0, 0, 0); fill: none; stroke-width: 10px; stroke-linejoin: round;" points="110 288 50 288 50 224 110 224"/>
+    <rect x="110" y="216" width="20" height="16" style="stroke: rgb(0, 0, 0); fill: none; stroke-width: 10px; stroke-linejoin: round;"/>
+    <rect x="110" y="280" width="20" height="16" style="stroke: rgb(0, 0, 0); fill: none; stroke-width: 10px; stroke-linejoin: round;"/>
+    <rect x="110" y="248" width="20" height="16" style="stroke: rgb(0, 0, 0); fill: none; stroke-width: 10px; stroke-linejoin: round;"/>
+    <rect x="110" y="184" width="20" height="16" style="stroke: rgb(0, 0, 0); fill: none; stroke-width: 10px; stroke-linejoin: round;"/>
+    <rect x="110" y="312" width="20" height="16" style="stroke: rgb(0, 0, 0); fill: none; stroke-width: 10px; stroke-linejoin: round;"/>
+    <polyline style="stroke: rgb(0, 0, 0); fill: none; stroke-miterlimit: 5; stroke-linejoin: round; stroke-width: 10px;" points="110 192 75 192 52 46"/>
+    <polyline style="stroke: rgb(0, 0, 0); fill: none; stroke-miterlimit: 5; stroke-linejoin: round; stroke-width: 10px;" points="111 320 76 320 53 466"/>
+    <ellipse style="stroke-miterlimit: 1; stroke-width: 10px; paint-order: fill; fill: none; stroke: rgb(0, 0, 0);" cx="50" cy="476" rx="10" ry="10"/>
+  </g>
+</svg>

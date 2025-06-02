@@ -1,0 +1,88 @@
+[
+  {
+    "name": "my_bookmark",
+    "type": "folder",
+    "path": "my_bookmark",
+    "children": [
+      {
+        "name": "sc-seq.md",
+        "type": "markdown",
+        "path": "my_bookmark/sc-seq.md"
+      }
+    ]
+  },
+  {
+    "name": "others",
+    "type": "folder",
+    "path": "others",
+    "children": [
+      {
+        "name": "my_digit_arts",
+        "type": "folder",
+        "path": "others/my_digit_arts",
+        "children": [
+          {
+            "name": "DNA_cores.svg",
+            "type": "image",
+            "path": "others/my_digit_arts/DNA_cores.svg"
+          },
+          {
+            "name": "DNA_on_chip.svg",
+            "type": "image",
+            "path": "others/my_digit_arts/DNA_on_chip.svg"
+          },
+          {
+            "name": "MGR16x16.svg",
+            "type": "image",
+            "path": "others/my_digit_arts/MGR16x16.svg"
+          },
+          {
+            "name": "MGR18x18.svg",
+            "type": "image",
+            "path": "others/my_digit_arts/MGR18x18.svg"
+          },
+          {
+            "name": "MGR_Path_16x16.svg",
+            "type": "image",
+            "path": "others/my_digit_arts/MGR_Path_16x16.svg"
+          },
+          {
+            "name": "MGR_Path_18x18.svg",
+            "type": "image",
+            "path": "others/my_digit_arts/MGR_Path_18x18.svg"
+          },
+          {
+            "name": "README.md",
+            "type": "markdown",
+            "path": "others/my_digit_arts/README.md"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "bio.md",
+    "type": "markdown",
+    "path": "bio.md"
+  },
+  {
+    "name": "bioinfo.md",
+    "type": "markdown",
+    "path": "bioinfo.md"
+  },
+  {
+    "name": "coding.md",
+    "type": "markdown",
+    "path": "coding.md"
+  },
+  {
+    "name": "hello.md",
+    "type": "markdown",
+    "path": "hello.md"
+  },
+  {
+    "name": "Ziyue Cheng CV.pdf",
+    "type": "pdf",
+    "path": "Ziyue Cheng CV.pdf"
+  }
+]

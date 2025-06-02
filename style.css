@@ -1,0 +1,941 @@
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 48px 32px 32px; /* Add more padding to the screen and space for the status bar */
+    
+    display: flex; /* Optional: helps center the window if you want */
+    justify-content: center; /* Optional: helps center the window */
+    align-items: flex-start; /* Optional: aligns window to top */
+    min-height: 100vh;
+    box-sizing: border-box;
+    overflow: hidden; /* Disable scrollbars for the body */
+    background-image: url('assets/eso1912j.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+
+.app-window {
+    width: 90vw;
+    max-width: 100vw;
+    min-width: 175px;
+    height: 50vh;
+    max-height: 100vh;
+    min-height: 150px;
+    left: 5vw;
+    top: 60px;
+    background-color: #ffffff;
+    border: 1px solid #cccccc;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    display: flex;
+    flex-direction: column;
+    position: absolute; /* Required for handles to position absolutely */
+
+    /* For basic CSS resizing (adds a handle at the bottom-right): */
+    resize: both; /* Allows user to resize. JS needed for more advanced resizing. */
+    overflow: hidden;
+
+    /* For positioning if you want it draggable later (JS needed for dragging logic) */
+    /* position: absolute; */ /* Uncomment if you plan to make it draggable */
+    /* top: 50px; */          /* Example starting position */
+    /* left: 50px; */         /* Example starting position */
+}
+
+/* Hide the default resize handle for a cleaner look, but keep functionality */
+.app-window::-webkit-resizer {
+    background: transparent;
+}
+
+.title-bar {
+    background-color: #e8e8e8; /* Title bar background */
+    padding: 8px 12px;
+    border-bottom: 1px solid #cccccc;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: move; /* Visual hint that it can be dragged (JS needed for actual drag) */
+    user-select: none; /* Prevent text selection when trying to drag */
+    height: 24px; /* Fixed height for the title bar */
+    flex-shrink: 0; /* Prevent title bar from shrinking */
+}
+
+.window-icon {
+    margin-right: 8px;
+    font-size: 16px;
+    color: #333;
+    display: flex;
+    align-items: center;
+}
+
+.title-bar .title {
+    font-weight: bold;
+    color: #333333;
+    flex-grow: 1; /* Allow title to take available space */
+    text-align: center; /* Center title text */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 0 10px; /* Add padding so it doesn't touch controls or icon */
+}
+
+.window-controls {
+    display: flex;
+    align-items: center;
+}
+
+.control-btn {
+    background-color: transparent;
+    border: none;
+    color: #555555;
+    font-size: 14px; /* Adjust size of symbols */
+    font-weight: bold;
+    width: 28px;
+    height: 28px;
+    margin-left: 4px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1; /* Ensure symbols are centered vertically */
+    font-family: 'Font Awesome 6 Free', 'FontAwesome', Arial, sans-serif;
+}
+
+.control-btn:hover {
+    background-color: #d5d5d5;
+}
+
+.control-btn.minimize:hover {
+    background-color: #c0c0c0;
+}
+.control-btn.maximize:hover {
+    background-color: #c0c0c0;
+}
+.control-btn.close:hover {
+    background-color: #e81123; /* Standard red for close button hover */
+    color: white;
+}
+
+.control-btn.minimize::before {
+    content: "\f068"; /* fa-minus */
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+}
+.control-btn.maximize::before {
+    content: "\f2d0"; /* fa-window-maximize */
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+}
+.control-btn.close::before {
+    content: "\f00d"; /* fa-xmark */
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+}
+
+.control-btn span {
+    display: none;
+}
+
+.window-content {
+    padding: 15px;
+    flex-grow: 1; /* This makes the content area fill the available space */
+    overflow: auto; /* Add scrollbars if content overflows */
+    background-color: #f9f9f9; /* Slightly different background for content area */
+    display: flex; /* To make it a flex container for later layout */
+    flex-direction: column; /* Stack children vertically */
+}
+
+.status-bar {
+    width: 100%;
+    min-width: 0;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 36px;
+    background: #444; /* Darker grey for light mode */
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 3000;
+    font-size: 15px;
+    padding: 0 12px; /* Reduce padding to prevent overflow */
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    box-sizing: border-box;
+    overflow-x: auto;
+    gap: 0;
+}
+.status-left, .status-right {
+    min-width: 0;
+}
+.status-right {
+    flex-shrink: 0;
+    flex-wrap: nowrap;
+    gap: 10px;
+}
+.status-tabs {
+    min-width: 0;
+    flex-wrap: nowrap;
+}
+.status-tab {
+    min-width: 0;
+    max-width: 160px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.status-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.status-home {
+    background: none !important;
+    border: none;
+    color: #222;
+    font-size: 28px;
+    margin-right: 8px;
+    cursor: pointer;
+    padding: 0;
+    border-radius: 6px;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    height: 36px;
+    width: 36px;
+    box-shadow: none;
+}
+.status-home img {
+    display: block;
+    width: 32px;
+    height: 32px;
+    margin: auto;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+.status-home:hover {
+    background: none !important;
+    filter: brightness(1.2);
+}
+.status-tabs {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.status-tab {
+    background: #333;
+    color: #fff;
+    border-radius: 4px 4px 0 0;
+    padding: 4px 14px 4px 14px;
+    font-size: 14px;
+    margin-right: 2px;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+    border: 1px solid #222;
+    border-bottom: none;
+    position: relative;
+    top: 2px;
+}
+.status-tab.active {
+    background: #fff;
+    color: #222;
+    border-color: #bbb #bbb #fff #bbb;
+    z-index: 2;
+}
+.status-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+.status-info {
+    margin-left: 12px;
+    font-size: 14px;
+    color: #bbb;
+}
+.status-icon {
+    color: #fff;
+    font-size: 18px;
+    margin-left: 0;
+    margin-right: 0;
+    transition: color 0.2s;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+}
+.status-icon:hover {
+    color: #ff4b4b;
+}
+.status-icon[title="Bilibili"]:hover {
+    color: #00a1d6;
+}
+.status-icon[title="GitHub"]:hover {
+    color: #6e5494;
+}
+
+/* Color switch button */
+.status-color-switch {
+    background: #fff;
+    border: 1px solid #bbb;
+    color: #222;
+    font-size: 18px;
+    margin-left: 10px;
+    cursor: pointer;
+    padding: 0 10px;
+    border-radius: 16px;
+    transition: background 0.2s, border 0.2s;
+    display: flex;
+    align-items: center;
+    height: 28px;
+    min-width: 48px;
+    position: relative;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    overflow: hidden;
+}
+.status-color-switch .switch-slider {
+    position: absolute;
+    left: 4px;
+    top: 4px;
+    width: 20px;
+    height: 20px;
+    background: #eee;
+    border-radius: 50%;
+    transition: left 0.2s, background 0.2s;
+    z-index: 1;
+}
+.status-color-switch .switch-icon {
+    position: relative;
+    z-index: 2;
+    font-size: 16px;
+    margin-left: 24px;
+    margin-right: 0;
+    transition: color 0.2s;
+}
+body.dark-mode .status-color-switch {
+    background: #23272e;
+    border: 1px solid #444;
+    color: #fff;
+}
+body.dark-mode .status-color-switch .switch-slider {
+    left: 24px;
+    background: #444;
+}
+body.dark-mode .status-color-switch .switch-icon {
+    color: #ffe066;
+}
+
+/* Import Font Awesome CSS */
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css');
+
+body.dark-mode {
+    background-color: #181a1b;
+    color: #e0e0e0;
+}
+body.dark-mode .app-window {
+    background-color: #23272e;
+    border-color: #333;
+    color: #e0e0e0;
+}
+body.dark-mode .window-content {
+    background-color: #23272e;
+    color: #e0e0e0;
+}
+body.dark-mode .title-bar {
+    background-color: #23272e;
+    border-bottom: 1px solid #333;
+    color: #e0e0e0;
+}
+body.dark-mode .window-icon,
+body.dark-mode .title-bar .title {
+    color: #e0e0e0;
+}
+body.dark-mode .status-bar {
+    background: #222; /* Even darker for dark mode */
+    color: #e0e0e0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+}
+body.dark-mode .status-tab {
+    background: #23272e;
+    color: #e0e0e0;
+    border-color: #23272e #23272e #23272e #23272e;
+}
+body.dark-mode .status-tab.active {
+    background: #eee;
+    color: #23272e;
+    border-color: #bbb #bbb #eee #bbb;
+}
+body.dark-mode .status-home {
+    color: #fff;
+}
+body.dark-mode .status-home:hover {
+    filter: brightness(1.4);
+}
+body.dark-mode .status-color-switch {
+    color: #fff;
+}
+body.dark-mode .status-color-switch:hover {
+    background: #444;
+}
+body.dark-mode .status-icon {
+    color: #fff;
+}
+body.dark-mode .status-icon:hover {
+    color: #ff4b4b;
+}
+body.dark-mode .status-info {
+    color: #bbb;
+}
+
+/* --- Custom resize handles for all edges and corners --- */
+.app-window .resize-handle {
+    position: absolute;
+    z-index: 10;
+    background: transparent;
+    pointer-events: auto;
+}
+/* Corners: 12x12px squares */
+.resize-handle-nw, .resize-handle-ne, .resize-handle-sw, .resize-handle-se {
+    width: 12px;
+    height: 12px;
+}
+.resize-handle-nw {
+    top: -2px; left: -2px;
+    cursor: nwse-resize;
+}
+.resize-handle-ne {
+    top: -2px; right: -2px;
+    cursor: nesw-resize;
+}
+.resize-handle-sw {
+    bottom: -2px; left: -2px;
+    cursor: nesw-resize;
+}
+.resize-handle-se {
+    bottom: -2px; right: -2px;
+    cursor: nwse-resize;
+}
+/* Edges: 100% width/height, 8px thick */
+.resize-handle-n {
+    top: -3px; left: 10px; right: 10px;
+    height: 8px;
+    cursor: ns-resize;
+}
+.resize-handle-s {
+    bottom: -3px; left: 10px; right: 10px;
+    height: 8px;
+    cursor: ns-resize;
+}
+.resize-handle-e {
+    top: 10px; bottom: 10px; right: -3px;
+    width: 8px;
+    cursor: ew-resize;
+}
+.resize-handle-w {
+    top: 10px; bottom: 10px; left: -3px;
+    width: 8px;
+    cursor: ew-resize;
+}
+
+/* Optional: highlight on hover for better UX */
+.resize-handle:hover {
+    background: rgba(0,0,0,0.08);
+    border-radius: 3px;
+}
+
+body.dark-mode .resize-handle:hover {
+    background: rgba(255,255,255,0.10);
+}
+
+.status-bar, .status-left, .status-right, .status-tabs, .status-tab, .status-home, .status-home img, .status-icon, .status-color-switch {
+    user-select: none;
+}
+
+/* --- File Manager Tree Styles --- */
+.file-tree-root {
+    list-style: none;
+    margin: 0;
+    padding: 0 0 0 8px;
+    font-size: 15px;
+    color: inherit;
+}
+.file-tree-node {
+    margin: 0;
+    padding: 2px 0 2px 0.5em;
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+    line-height: 1.7;
+    transition: background 0.15s;
+}
+.file-tree-node .file-tree-icon {
+    margin-right: 6px;
+    width: 18px;
+    display: inline-block;
+    text-align: center;
+    /* Remove color here to allow file-type-specific color below */
+}
+/* File type icon colors (light mode) */
+.file-tree-node.folder .file-tree-icon {
+    color: #bfae5a;
+}
+.file-tree-node.markdown .file-tree-icon {
+    color: #4e7cff;
+}
+.file-tree-node.pdf .file-tree-icon {
+    color: #e04b3d;
+}
+.file-tree-node.image .file-tree-icon {
+    color: #2dbd6e;
+}
+.file-tree-node.video .file-tree-icon {
+    color: #b36ae2;
+}
+.file-tree-node.html .file-tree-icon {
+    color: #e67e22;
+}
+.file-tree-node.text .file-tree-icon {
+    color: #f7ca18;
+}
+.file-tree-node .file-tree-icon {
+    /* fallback for generic files */
+    color: #888;
+}
+/* File type icon colors (dark mode) */
+body.dark-mode .file-tree-node.folder .file-tree-icon {
+    color: #e2b714;
+}
+body.dark-mode .file-tree-node.markdown .file-tree-icon {
+    color: #6cc644;
+}
+body.dark-mode .file-tree-node.pdf .file-tree-icon {
+    color: #e74c3c;
+}
+body.dark-mode .file-tree-node.image .file-tree-icon {
+    color: #5bc0de;
+}
+body.dark-mode .file-tree-node.video .file-tree-icon {
+    color: #b294ff;
+}
+body.dark-mode .file-tree-node.html .file-tree-icon {
+    color: #e44d26;
+}
+body.dark-mode .file-tree-node.text .file-tree-icon {
+    color: #f7ca18;
+}
+body.dark-mode .file-tree-node .file-tree-icon {
+    color: #cccccc;
+}
+.file-tree-root,
+.file-tree-children {
+    list-style: none;
+    margin: 0;
+    padding: 0 0 0 8px;
+    position: relative;
+}
+.file-tree-children {
+    border-left: 1.5px solid #d0d0d0;
+}
+.file-tree-node {
+    position: relative;
+}
+.file-tree-node .file-tree-label {
+    transition: color 0.15s, background 0.15s;
+    padding: 2px 4px 2px 2px;
+    border-radius: 4px;
+    position: relative;
+    z-index: 1;
+}
+.file-tree-node .file-tree-label:hover {
+    color: #0078d4;
+    background: #e6f0fa;
+}
+.file-tree-node .file-tree-label:hover::before {
+    border-left-color: #0078d4;
+}
+body.dark-mode .file-tree-children {
+    border-left: 1.5px solid #444;
+}
+body.dark-mode .file-tree-node .file-tree-label:hover {
+    color: #ffe066;
+    background: #2a2e39;
+}
+body.dark-mode .file-tree-node .file-tree-label:hover::before {
+    border-left-color: #ffe066;
+}
+.file-tree-node.folder > .file-tree-label {
+    font-weight: 600;
+}
+.file-tree-node.folder > .file-tree-label:hover {
+    font-weight: 600;
+}
+.file-tree-node .file-tree-label a {
+    color: inherit;
+    text-decoration: underline;
+    cursor: pointer;
+}
+.file-tree-node .file-tree-label a[target="_blank"]::after {
+    content: '\f35d'; /* fa-external-link-alt */
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    margin-left: 4px;
+    font-size: 0.95em;
+    opacity: 0.7;
+}
+.file-tree-node .file-tree-label a:active {
+    color: #0078d4;
+}
+
+/* Modern custom scrollbar styles */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(120,120,120,0.25);
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  transition: background 0.2s;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(120,120,120,0.45);
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+body.dark-mode ::-webkit-scrollbar-thumb {
+  background: rgba(180,180,180,0.18);
+}
+body.dark-mode ::-webkit-scrollbar-thumb:hover {
+  background: rgba(180,180,180,0.35);
+}
+
+/* For Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #bbb #0000;
+}
+body.dark-mode * {
+  scrollbar-color: #444 #0000;
+}
+
+/* --- Github-style Markdown Window Styles --- */
+.markdown-content {
+  font-family: 'Segoe UI', 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+  font-size: 16px;
+  line-height: 1.3;
+  color: #24292f;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  padding: 2em 2.5em 2em 2.5em;
+  margin: 0 auto;
+  max-width: 900px;
+  min-width: 0;
+  min-height: 0;
+  overflow-x: auto;
+  overflow-wrap: break-word;
+  word-break: normal;
+  white-space: normal;
+}
+body.dark-mode .markdown-content {
+  color: #c9d1d9;
+  background: #161b22;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+}
+.app-window .markdown-content {
+  width: 90%;
+  max-width: 900px;
+  margin: 0 auto;
+  box-sizing: border-box;
+  padding: 1em;
+  overflow-wrap: break-word;
+  word-break: normal;
+  white-space: normal;
+}
+.markdown-content h1,
+.markdown-content h2,
+.markdown-content h3,
+.markdown-content h4,
+.markdown-content h5,
+.markdown-content h6 {
+  font-weight: 600;
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+  color: #1f2328;
+  border-bottom: 1px solid #eaecef;
+  padding-bottom: 0.3em;
+}
+body.dark-mode .markdown-content h1,
+body.dark-mode .markdown-content h2,
+body.dark-mode .markdown-content h3,
+body.dark-mode .markdown-content h4,
+body.dark-mode .markdown-content h5,
+body.dark-mode .markdown-content h6 {
+  color: #c9d1d9;
+  border-bottom: 1px solid #30363d;
+}
+.markdown-content h1 { font-size: 1.6em; }
+.markdown-content h2 { font-size: 1.4em; }
+.markdown-content h3 { font-size: 1.2em; }
+.markdown-content h4 { font-size: 1.0em; }
+.markdown-content h5 { font-size: 0.8em; }
+.markdown-content h6 { font-size: 0.6em; }
+.markdown-content p {
+  margin-top: 0.4em;
+  margin-bottom: 0.4em;
+  line-height: 1.5;
+}
+.markdown-content ul,
+.markdown-content ol {
+  margin: 0em 0 0em 1.1em;
+  padding-left: 1.1em;
+}
+.markdown-content li {
+  margin: 0.3em 0;
+}
+.markdown-content a {
+  color: #0969da;
+  text-decoration: underline;
+  overflow-wrap: break-word;
+  word-break: normal;
+  white-space: normal;
+  transition: color 0.2s;
+}
+body.dark-mode .markdown-content a {
+  color: #58a6ff;
+}
+.markdown-content a:hover {
+  color: #d73a49;
+}
+.markdown-content code {
+  background: #f6f8fa;
+  color: #24292f;
+  font-family: 'Fira Mono', 'Consolas', 'Menlo', monospace;
+  font-size: 0.97em;
+  border-radius: 6px;
+  padding: 2px 6px;
+}
+body.dark-mode .markdown-content code {
+  background: #22272e;
+  color: #c9d1d9;
+}
+.markdown-content pre {
+  background: #f6f8fa;
+  color: #24292f;
+  border-radius: 6px;
+  padding: 1em;
+  overflow-x: auto;
+  font-family: 'Fira Mono', 'Consolas', 'Menlo', monospace;
+  font-size: 0.97em;
+  margin: 1.2em 0;
+  border: 1px solid #eaecef;
+}
+body.dark-mode .markdown-content pre {
+  background: #161b22;
+  color: #c9d1d9;
+  border: 1px solid #30363d;
+}
+.markdown-content blockquote {
+  border-left: 4px solid #d0d7de;
+  background: #f6f8fa;
+  color: #57606a;
+  margin: 1em 0;
+  padding: 0.7em 1.2em;
+  border-radius: 6px;
+}
+body.dark-mode .markdown-content blockquote {
+  border-left: 4px solid #30363d;
+  background: #22272e;
+  color: #8b949e;
+}
+.markdown-content table {
+  border-collapse: collapse;
+  margin: 1.2em 0;
+  width: 100%;
+  background: #fff;
+}
+body.dark-mode .markdown-content table {
+  background: #161b22;
+}
+.markdown-content th, .markdown-content td {
+  border: 1px solid #d0d7de;
+  padding: 0.5em 1em;
+  text-align: left;
+}
+body.dark-mode .markdown-content th, body.dark-mode .markdown-content td {
+  border: 1px solid #30363d;
+}
+.markdown-content hr {
+  border: none;
+  border-top: 1.5px solid #eaecef;
+  margin: 2em 0;
+}
+body.dark-mode .markdown-content hr {
+  border-top: 1.5px solid #30363d;
+}
+.markdown-content img {
+  max-width: 100%;
+  border-radius: 6px;
+  margin: 1em 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+}
+.markdown-content strong {
+  font-weight: 600;
+}
+.markdown-content em {
+  font-style: italic;
+}
+.markdown-content del {
+  text-decoration: line-through;
+}
+.markdown-content sup, .markdown-content sub {
+  font-size: 0.85em;
+}
+.markdown-content details {
+  background: #f6f8fa;
+  border-radius: 6px;
+  padding: 0.5em 1em;
+  margin: 1em 0;
+}
+body.dark-mode .markdown-content details {
+  background: #22272e;
+}
+.markdown-content summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+.app-window .markdown-content {
+  width: 90%;
+  max-width: 900px;
+  margin: 0 auto;
+  box-sizing: border-box;
+  padding: 1em;
+  padding-bottom: 10em;
+  overflow-wrap: break-word;
+  word-break: normal;
+  white-space: normal;
+}
+
+/* --- Folder Viewer Styles --- */
+.folder-viewer-content {
+  background: #f8fafd;
+  border-radius: 8px;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+}
+body.dark-mode .folder-viewer-content {
+  background: #181a1b;
+}
+.folder-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  grid-auto-rows: 150px;
+  gap: 24px 18px;
+  padding: 0.5em 0 0 0;
+  justify-items: start; /* Align grid items to the left */
+  justify-content: start; /* Align the whole grid to the left */
+}
+.folder-grid-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  background: rgba(255,255,255,0.82); /* Add alpha for light mode */
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  padding: 18px 8px 10px 8px;
+  cursor: pointer;
+  transition: box-shadow 0.18s, background 0.18s, transform 0.12s;
+  border: 1.5px solid #eaecef;
+  min-width: 0;
+  min-height: 0;
+  user-select: none;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+}
+.folder-grid-item:hover {
+  background: #e6f0fa;
+  box-shadow: 0 4px 16px rgba(80,120,255,0.10);
+  transform: translateY(-2px) scale(1.04);
+  border-color: #4e7cff;
+}
+body.dark-mode .folder-grid-item {
+  background: rgba(35,39,46,0.88); /* Add alpha for dark mode */
+  border-color: #30363d;
+  color: #e0e0e0;
+}
+body.dark-mode .folder-grid-item:hover {
+  background: #232e1e;
+  border-color: #6cc644;
+  box-shadow: 0 4px 16px rgba(80,255,120,0.10);
+}
+.folder-grid-icon {
+  font-size: 2.2em;
+  margin-bottom: 0.5em;
+  color: #4e7cff;
+  text-align: center;
+}
+.folder-grid-item.folder .folder-grid-icon { color: #bfae5a; }
+.folder-grid-item.markdown .folder-grid-icon { color: #4e7cff; }
+.folder-grid-item.pdf .folder-grid-icon { color: #e04b3d; }
+.folder-grid-item.image .folder-grid-icon { color: #2dbd6e; }
+.folder-grid-item.video .folder-grid-icon { color: #b36ae2; }
+.folder-grid-item.html .folder-grid-icon { color: #e67e22; }
+.folder-grid-item.text .folder-grid-icon { color: #f7ca18; }
+body.dark-mode .folder-grid-item.folder .folder-grid-icon { color: #e2b714; }
+body.dark-mode .folder-grid-item.markdown .folder-grid-icon { color: #6cc644; }
+body.dark-mode .folder-grid-item.pdf .folder-grid-icon { color: #e74c3c; }
+body.dark-mode .folder-grid-item.image .folder-grid-icon { color: #5bc0de; }
+body.dark-mode .folder-grid-item.video .folder-grid-icon { color: #b294ff; }
+body.dark-mode .folder-grid-item.html .folder-grid-icon { color: #e44d26; }
+body.dark-mode .folder-grid-item.text .folder-grid-icon { color: #f7ca18; }
+.folder-grid-label {
+  font-size: 1em;
+  margin-top: 0.2em;
+  text-align: center;
+  word-break: break-all;
+  color: #222;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+body.dark-mode .folder-grid-label {
+  color: #e0e0e0;
+}
+.folder-grid-preview-img {
+  display: block;
+  margin: 0 auto 0.3em auto;
+  max-width: 60px;
+  max-height: 60px;
+  border-radius: 6px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.10);
+  background: #fff;
+  object-fit: contain;
+}
+body.dark-mode .folder-grid-preview-img {
+  background: #23272e;
+}
+.desktop {
+  position: fixed;
+  top: 40px;
+  left: 20px;
+  width: 100vw;
+  height: calc(100vh - 36px);
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  grid-auto-rows: 130px;
+  gap: 20px 20px;
+  justify-items: start;
+  justify-content: start;
+  z-index: 0;
+}
+

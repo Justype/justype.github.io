@@ -1,49 +1,1205 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Transport</title>
-    <style>
-        td{
-            padding: 5px;
-        }
-        code{
-            font-family: consolas, monospace;
-            background: #e0e0e0;
-            padding: 3px;
-            border-radius: 5px;
-        }
-    </style>
+    <title>Justype</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
 </head>
-
 <body>
-    <h1>Transport</h1>
-    <h2>Personal Use</h2>
-    <ul>
-        <li><a href="http://www.fao.org/3/Y4628E/y4628e03.htm">Egg Production</a></li>
-        <li><a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4921131/">Inflammatory Cardiomyopathy 心肌炎</a></li>
-        <li>找书
-            <ul>
-                <li><a href="https://salttiger.com/">编程书籍</a></li>
-            </ul>
-        </li>
-    </ul>
-    <h2>My Project</h2>
-    <table>
-        <tr>
-            <td><a href="https://github.com/justype/JsUtils">JsUtils</a></td>
-            <td>一些简单的下载网页文件的工具</td>
-            <td><code>Javascript</code></td>
-        </tr>
-        <tr>
-            <td><a href="https://github.com/justype/LoftTagDownloader">LoftTagDownloader</a></td>
-            <td>根据Tag下载 Lofter的图像和博客</td>
-            <td><code>Python</code></td>
-        </tr>
-    </table>
+    <div class="status-bar">
+        <div class="status-left">
+            <button class="status-home" id="statusHomeBtn" title="Auto Tiling">
+                <img src="favicon.svg" alt="Home" />
+            </button>
+            <div class="status-tabs" id="statusTabs">
+                <span class="status-tab active">HOME</span>
+            </div>
+        </div>
+        <div class="status-right">
+            <a href="https://www.youtube.com/@JustypeNet" target="_blank" class="status-icon" title="YouTube"><i class="fa-brands fa-youtube"></i></a>
+            <a href="https://space.bilibili.com/474052916" target="_blank" class="status-icon" title="Bilibili"><i class="fa-brands fa-bilibili"></i></a>
+            <a href="https://github.com/Justype" target="_blank" class="status-icon" title="GitHub"><i class="fab fa-github"></i></a>
+            <button class="status-color-switch" id="colorSwitchBtn" title="Switch color mode">
+                <span class="switch-slider"></span>
+                <i class="fa-solid fa-circle-half-stroke switch-icon"></i>
+            </button>
+        </div>
+    </div>
+    <div class="desktop folder-grid" id="desktop">
+        <div class="desktop-shortcut folder-grid-item folder" id="desktop-home-shortcut" title="HOME Folder">
+            <div class="folder-grid-icon"><i class="fa-solid fa-home"></i></div>
+            <div class="folder-grid-label">HOME</div>
+        </div>
+    </div>
+
+    <div class="app-window" id="main-window">
+        <div class="title-bar">
+            <span class="window-icon"><i class="fa-solid fa-home"></i></span> <span class="title">HOME</span>
+            <div class="window-controls">
+                <button class="control-btn minimize" aria-label="Minimize"><span>—</span></button>
+                <button class="control-btn maximize" aria-label="Maximize"><span>□</span></button>
+                <button class="control-btn close" aria-label="Close"><span>✕</span></button>
+            </div>
+        </div>
+        <div class="window-content" id="file-manager-root">
+            <!-- File manager tree will be rendered here -->
+        </div>
+        <!-- Custom resize handles -->
+        <div class="resize-handle resize-handle-nw"></div>
+        <div class="resize-handle resize-handle-n"></div>
+        <div class="resize-handle resize-handle-ne"></div>
+        <div class="resize-handle resize-handle-e"></div>
+        <div class="resize-handle resize-handle-se"></div>
+        <div class="resize-handle resize-handle-s"></div>
+        <div class="resize-handle resize-handle-sw"></div>
+        <div class="resize-handle resize-handle-w"></div>
+    </div>
+    <script>
+        // AppWindow class for reusable window logic
+        class AppWindow {
+            constructor(element) {
+                this.appWindow = element;
+                this.titleBar = this.appWindow.querySelector('.title-bar');
+                this.isDragging = false;
+                this.offsetX = 0;
+                this.offsetY = 0;
+                this.isTiled = false;
+                this.isMaximized = false;
+                this.prevRect = null;
+                this.originalRect = {
+                    left: this.appWindow.offsetLeft,
+                    top: this.appWindow.offsetTop,
+                    width: this.appWindow.offsetWidth,
+                    height: this.appWindow.offsetHeight
+                };
+                // Restore position/size from localStorage if available
+                this.restoreWindowState();
+                this.init();
+            }
+            init() {
+                // Drag logic
+                this.titleBar.addEventListener('mousedown', (e) => {
+                    this.isDragging = true;
+                    this.offsetX = e.clientX - this.appWindow.offsetLeft;
+                    this.offsetY = e.clientY - this.appWindow.offsetTop;
+                    if (!this.isTiled) {
+                        this.originalRect = {
+                            left: this.appWindow.offsetLeft,
+                            top: this.appWindow.offsetTop,
+                            width: this.appWindow.offsetWidth,
+                            height: this.appWindow.offsetHeight
+                        };
+                    }
+                    document.body.style.userSelect = 'none';
+                    // Hide pointer events on iframes during drag
+                    this.setIframePointerEvents('none');
+                });
+                document.addEventListener('mousemove', (e) => {
+                    if (!this.isDragging) return;
+                    if (this.isMaximized && this.prevRect) {
+                        this.restorePrevRect();
+                        this.offsetX = e.clientX - this.prevRect.left;
+                        this.offsetY = e.clientY - this.prevRect.top;
+                        this.prevRect = null;
+                    }
+                    let x = e.clientX - this.offsetX;
+                    let y = e.clientY - this.offsetY;
+                    this.appWindow.style.left = x + 'px';
+                    this.appWindow.style.top = y + 'px';
+                    this.appWindow.style.position = 'absolute';
+                    // Snap logic
+                    const snapMargin = 32;
+                    const statusBarHeight = 36;
+                    if (e.clientX < snapMargin) {
+                        this.tile('left', statusBarHeight);
+                    } else if (window.innerWidth - e.clientX < snapMargin) {
+                        this.tile('right', statusBarHeight);
+                    } else if (e.clientY < snapMargin + statusBarHeight) {
+                        this.tile('top', statusBarHeight);
+                    } else if (window.innerHeight - e.clientY < snapMargin) {
+                        this.tile('bottom', statusBarHeight);
+                    } else {
+                        if (this.isTiled) this.restoreOriginalWindow();
+                    }
+                });
+                document.addEventListener('mouseup', () => {
+                    if (this.isDragging) {
+                        this.saveWindowState();
+                    }
+                    this.isDragging = false;
+                    document.body.style.userSelect = '';
+                    // Restore pointer events on iframes after drag
+                    this.setIframePointerEvents('');
+                });
+                // Double click maximize
+                this.titleBar.addEventListener('dblclick', () => {
+                    this.toggleMaximize();
+                });
+                // Window controls
+                this.appWindow.querySelector('.control-btn.minimize').addEventListener('click', () => {
+                    this.appWindow.style.display = 'none';
+                });
+                this.appWindow.querySelector('.control-btn.maximize').addEventListener('click', () => {
+                    this.toggleMaximize();
+                });
+                this.appWindow.querySelector('.control-btn.close').addEventListener('click', () => {
+                    this.appWindow.style.display = 'none';
+                    // Remove window and tab from DOM and appWindows list
+                    const idx = appWindows.indexOf(this);
+                    if (idx > 0) { // Don't remove HOME window
+                        // Remove tab
+                        const tab = document.getElementById('statusTabs').children[idx];
+                        if (tab) tab.remove();
+                        // Remove window from DOM
+                        this.appWindow.remove();
+                        // Remove from appWindows
+                        appWindows.splice(idx, 1);
+                    }
+                });
+                // Resize handles
+                this.initResizeHandles();
+                // Bring window to top on click (anywhere in the window)
+                this.appWindow.addEventListener('mousedown', () => {
+                    this.bringToFront();
+                });
+                // Also bring to top if clicking the title bar
+                this.titleBar.addEventListener('mousedown', () => {
+                    this.bringToFront();
+                });
+                // Also bring to top if clicking inside window content
+                const windowContent = this.appWindow.querySelector('.window-content');
+                if (windowContent) {
+                    windowContent.addEventListener('mousedown', (e) => {
+                        // Only bring to front if not clicking on a resize handle or window control
+                        if (!e.target.closest('.resize-handle') && !e.target.closest('.window-controls')) {
+                            this.bringToFront();
+                        }
+                    });
+                    // If window contains an iframe, bring to front on iframe click
+                    const iframe = windowContent.querySelector('iframe');
+                    if (iframe) {
+                        iframe.addEventListener('mousedown', (e) => {
+                            this.bringToFront();
+                        });
+                    }
+                }
+            }
+            restoreOriginalWindow() {
+                if (this.originalRect) {
+                    this.appWindow.style.left = this.originalRect.left + 'px';
+                    this.appWindow.style.top = this.originalRect.top + 'px';
+                    this.appWindow.style.width = this.originalRect.width + 'px';
+                    this.appWindow.style.height = this.originalRect.height + 'px';
+                    this.isTiled = false;
+                }
+            }
+            restorePrevRect() {
+                if (this.prevRect) {
+                    this.appWindow.style.left = this.prevRect.left + 'px';
+                    this.appWindow.style.top = this.prevRect.top + 'px';
+                    this.appWindow.style.width = this.prevRect.width + 'px';
+                    this.appWindow.style.height = this.prevRect.height + 'px';
+                    this.appWindow.style.display = this.prevRect.display;
+                    this.isMaximized = false;
+                }
+            }
+            toggleMaximize() {
+                const statusBarHeight = 36;
+                if (!this.isMaximized) {
+                    this.prevRect = {
+                        left: this.appWindow.offsetLeft,
+                        top: this.appWindow.offsetTop,
+                        width: this.appWindow.offsetWidth,
+                        height: this.appWindow.offsetHeight,
+                        display: this.appWindow.style.display || ''
+                    };
+                    this.appWindow.style.left = '0px';
+                    this.appWindow.style.top = statusBarHeight + 'px';
+                    this.appWindow.style.width = '100vw';
+                    this.appWindow.style.height = 'calc(100vh - 36px)';
+                    this.appWindow.style.position = 'absolute';
+                    this.appWindow.style.display = '';
+                    this.isMaximized = true;
+                } else {
+                    this.restorePrevRect();
+                }
+            }
+            tile(direction, statusBarHeight) {
+                if (direction === 'left') {
+                    this.appWindow.style.left = 0;
+                    this.appWindow.style.top = statusBarHeight + 'px';
+                    this.appWindow.style.width = '50vw';
+                    this.appWindow.style.height = `calc(100vh - ${statusBarHeight}px)`;
+                } else if (direction === 'right') {
+                    this.appWindow.style.left = '50vw';
+                    this.appWindow.style.top = statusBarHeight + 'px';
+                    this.appWindow.style.width = '50vw';
+                    this.appWindow.style.height = `calc(100vh - ${statusBarHeight}px)`;
+                } else if (direction === 'top') {
+                    this.appWindow.style.left = 0;
+                    this.appWindow.style.top = statusBarHeight + 'px';
+                    this.appWindow.style.width = '100vw';
+                    this.appWindow.style.height = `calc(50vh - ${statusBarHeight / 2}px)`;
+                } else if (direction === 'bottom') {
+                    const halfHeight = Math.round((window.innerHeight - statusBarHeight) / 2);
+                    this.appWindow.style.left = 0;
+                    this.appWindow.style.top = `calc(50vh + ${statusBarHeight / 2}px)`;
+                    this.appWindow.style.width = '100vw';
+                    this.appWindow.style.height = `calc(50vh - ${statusBarHeight / 2}px)`;
+                }
+                this.isTiled = true;
+            }
+            initResizeHandles() {
+                const handles = this.appWindow.querySelectorAll('.resize-handle');
+                let resizeDir = '';
+                let startX, startY, startW, startH, startL, startT;
+                let mouseMoveHandler, mouseUpHandler;
+                let overlay = null;
+                handles.forEach(handle => {
+                    handle.addEventListener('mousedown', (e) => {
+                        e.stopPropagation();
+                        // Bring window to front when starting resize
+                        this.bringToFront();
+                        resizeDir = Array.from(handle.classList).find(cls => cls.startsWith('resize-handle-')).replace('resize-handle-', '');
+                        startX = e.clientX;
+                        startY = e.clientY;
+                        startW = this.appWindow.offsetWidth;
+                        startH = this.appWindow.offsetHeight;
+                        startL = this.appWindow.offsetLeft;
+                        startT = this.appWindow.offsetTop;
+                        document.body.style.userSelect = 'none';
+                        // Add overlay to capture mouse events above iframes
+                        overlay = document.createElement('div');
+                        overlay.style.position = 'fixed';
+                        overlay.style.left = '0';
+                        overlay.style.top = '0';
+                        overlay.style.width = '100vw';
+                        overlay.style.height = '100vh';
+                        overlay.style.zIndex = '99999';
+                        overlay.style.cursor = getComputedStyle(handle).cursor || 'default';
+                        overlay.style.background = 'transparent';
+                        document.body.appendChild(overlay);
+                        // Hide pointer events on iframes during resize
+                        this.setIframePointerEvents('none');
+                        // Define handlers here so we can remove them later
+                        mouseMoveHandler = (e) => {
+                            let dx = e.clientX - startX;
+                            let dy = e.clientY - startY;
+                            let minW = parseInt(getComputedStyle(this.appWindow).minWidth) || 200;
+                            let minH = parseInt(getComputedStyle(this.appWindow).minHeight) || 100;
+                            let newW = startW, newH = startH, newL = startL, newT = startT;
+                            if (resizeDir.includes('e')) {
+                                newW = Math.max(minW, startW + dx);
+                            }
+                            if (resizeDir.includes('s')) {
+                                newH = Math.max(minH, startH + dy);
+                            }
+                            if (resizeDir.includes('w')) {
+                                newW = Math.max(minW, startW - dx);
+                                newL = startL + dx;
+                            }
+                            if (resizeDir.includes('n')) {
+                                newH = Math.max(minH, startH - dy);
+                                newT = startT + dy;
+                            }
+                            this.appWindow.style.width = newW + 'px';
+                            this.appWindow.style.height = newH + 'px';
+                            this.appWindow.style.left = newL + 'px';
+                            this.appWindow.style.top = newT + 'px';
+                            this.appWindow.style.position = 'absolute';
+                        };
+                        mouseUpHandler = () => {
+                            document.removeEventListener('mousemove', mouseMoveHandler);
+                            document.removeEventListener('mouseup', mouseUpHandler);
+                            document.body.style.userSelect = '';
+                            if (overlay) {
+                                overlay.remove();
+                                overlay = null;
+                            }
+                            // Restore pointer events on iframes after resize
+                            this.setIframePointerEvents('');
+                            this.saveWindowState();
+                        };
+                        document.addEventListener('mousemove', mouseMoveHandler);
+                        document.addEventListener('mouseup', mouseUpHandler);
+                    });
+                });
+            }
+            // Helper to set pointer-events on all iframes in this window
+            setIframePointerEvents(val) {
+                const iframes = this.appWindow.querySelectorAll('iframe');
+                iframes.forEach(iframe => {
+                    iframe.style.pointerEvents = val;
+                });
+            }
+            // Save window position/size in vw/vh units
+            saveWindowState() {
+                // Do nothing (disabled localStorage save)
+            }
+            // Restore window position/size from vw/vh units
+            restoreWindowState() {
+                // Do nothing (disabled localStorage restore)
+            }
+            bringToFront() {
+                // Set this window's zIndex to highest + 1
+                let maxZ = 1000;
+                appWindows.forEach(winObj => {
+                    const z = parseInt(winObj.appWindow.style.zIndex) || 1000;
+                    if (z > maxZ) maxZ = z;
+                });
+                this.appWindow.style.zIndex = maxZ + 1;
+                // Update status bar tab: set this window's tab active, others inactive
+                const idx = appWindows.indexOf(this);
+                const tabs = document.querySelectorAll('.status-tab');
+                tabs.forEach((tab, i) => {
+                    tab.classList.toggle('active', i === idx);
+                });
+            }
+        }
+        // Store all AppWindow instances in a list
+        const appWindows = [];
+        appWindows.push(new AppWindow(document.getElementById('main-window')));
+
+        // Color switch button logic
+        const colorSwitchBtn = document.getElementById('colorSwitchBtn');
+        colorSwitchBtn.addEventListener('click', function () {
+            document.body.classList.toggle('dark-mode');
+        });
+
+        const statusHomeBtn = document.getElementById('statusHomeBtn');
+        statusHomeBtn.addEventListener('click', function () {
+            // Only tile if at least 2 windows
+            if (appWindows.length < 2) return;
+            const mainWin = appWindows[0].appWindow;
+            const statusBarHeight = 36;
+            const bodyW = document.body.clientWidth;
+            const bodyH = document.body.clientHeight;
+            if (bodyW > bodyH) {
+                mainWin.style.left = '0';
+                mainWin.style.top = statusBarHeight + 'px';
+                mainWin.style.width = '25vw';
+                mainWin.style.height = `calc(100vh - ${statusBarHeight}px)`;
+                mainWin.style.position = 'absolute';
+                appWindows[0].isTiled = true;
+                // Stack all others in 3/4
+                for (let i = 1; i < appWindows.length; ++i) {
+                    const win = appWindows[i].appWindow;
+                    win.style.left = '25vw';
+                    win.style.top = statusBarHeight + 'px';
+                    win.style.width = '75vw';
+                    win.style.height = `calc(100vh - ${statusBarHeight}px)`;
+                    win.style.position = 'absolute';
+                }
+            } else {
+                mainWin.style.left = '0';
+                mainWin.style.top = statusBarHeight + 'px';
+                mainWin.style.width = '100vw';
+                mainWin.style.height = '25vh';
+                mainWin.style.position = 'absolute';
+                appWindows[0].isTiled = true;
+                for (let i = 1; i < appWindows.length; ++i) {
+                    const win = appWindows[i].appWindow;
+                    win.style.left = '0';
+                    win.style.top = 'calc(25vh + 36px)';
+                    win.style.width = '100vw';
+                    win.style.height = '75vh';
+                    win.style.position = 'absolute';
+                }
+            }
+        });
+        // Disable the close button for HOME window
+        const homeCloseBtn = document.querySelector('#main-window .control-btn.close');
+        homeCloseBtn.disabled = true;
+        homeCloseBtn.style.opacity = '0.4';
+        homeCloseBtn.style.pointerEvents = 'none';
+
+        // --- Status bar tab switching logic (functional tabs, one per window) ---
+        const statusTabs = document.getElementById('statusTabs');
+        statusTabs.addEventListener('click', function (e) {
+            if (e.target.classList.contains('status-tab')) {
+                document.querySelectorAll('.status-tab').forEach(tab => tab.classList.remove('active'));
+                e.target.classList.add('active');
+                // Only bring the corresponding window to front, do not hide others
+                const idx = Array.from(statusTabs.children).indexOf(e.target);
+                if (appWindows[idx]) {
+                    const win = appWindows[idx].appWindow;
+                    if (win.style.display === 'none') {
+                        win.style.display = '';
+                    }
+                    appWindows[idx].bringToFront();
+                }
+            }
+        });
+
+        // --- Tiling Mode ---
+        let tilingMode = true; // true = auto, false = manual
+
+        function getIsHomeTiled() {
+            const mainWin = appWindows[0].appWindow;
+            // Check if HOME is in 1/4 state (width 25vw or height 25vh)
+            const w = mainWin.style.width;
+            const h = mainWin.style.height;
+            return (w === '25vw' || h === '25vh');
+        }
+
+        function getOpenNonHomeWindowsCount() {
+            return appWindows.length - 1;
+        }
+
+        function getTilingForNewTab() {
+            // Returns {mainWin, winWidth, winHeight, winLeft, winTop, isTiling}
+            const mainWin = document.getElementById('main-window');
+            const mainAppWin = appWindows[0];
+            const bodyW = document.body.clientWidth;
+            const bodyH = document.body.clientHeight;
+            // Use calc to avoid overlap: 25vw for HOME, 75vw for new, but new starts at exactly 25vw (no gap/overlap)
+            let winWidth = '90vw', winHeight = '90vh', winLeft = '5vw', winTop = '5vh', isTiling = false;
+            const openCount = getOpenNonHomeWindowsCount();
+            if (!tilingMode) {
+                // Manual mode: always open new windows floating
+                return { mainWin, winWidth, winHeight, winLeft, winTop, isTiling: false };
+            }
+            if (openCount === 0) {
+                // Only HOME is open, tile HOME to 1/4 and new tab to 3/4
+                if (bodyW > bodyH) {
+                    mainWin.style.left = '0';
+                    mainWin.style.top = '36px';
+                    mainWin.style.width = '25vw';
+                    mainWin.style.height = 'calc(100vh - 36px)';
+                    mainWin.style.position = 'absolute';
+                    winWidth = 'calc(75vw)';
+                    winHeight = 'calc(100vh - 36px)';
+                    winLeft = '25vw';
+                    winTop = '36px';
+                } else {
+                    mainWin.style.left = '0';
+                    mainWin.style.top = '36px';
+                    mainWin.style.width = '100vw';
+                    mainWin.style.height = '25vh';
+                    mainWin.style.position = 'absolute';
+                    winWidth = '100vw';
+                    winHeight = 'calc(75vh)';
+                    winLeft = '0';
+                    winTop = 'calc(25vh + 36px)';
+                }
+                mainAppWin.isTiled = true;
+                isTiling = true;
+            } else if (getIsHomeTiled()) {
+                // HOME is already tiled (1/4), new tab should always use 3/4
+                if (bodyW > bodyH) {
+                    winWidth = 'calc(75vw)';
+                    winHeight = 'calc(100vh - 36px)';
+                    winLeft = '25vw';
+                    winTop = '36px';
+                } else {
+                    winWidth = '100vw';
+                    winHeight = 'calc(75vh)';
+                    winLeft = '0';
+                    winTop = 'calc(25vh + 36px)';
+                }
+                isTiling = true;
+            } else {
+                // Already have multiple tabs, do nothing special
+                isTiling = false;
+            }
+            return { mainWin, winWidth, winHeight, winLeft, winTop, isTiling };
+        }
+
+        // --- Patch open*AppWindow functions to use new tiling logic ---
+        function openPdfAppWindow(filename, filePath) {
+            // Check if already open
+            const existingIdx = appWindows.findIndex(winObj => winObj.appWindow.dataset && winObj.appWindow.dataset.filePath === filePath);
+            if (existingIdx !== -1) {
+                appWindows[existingIdx].bringToFront();
+                appWindows[existingIdx].appWindow.style.display = '';
+                return;
+            }
+            const { winWidth, winHeight, winLeft, winTop } = getTilingForNewTab();
+            // Always use content/ prefix unless already present
+            let pdfPath = filePath.startsWith('content/') ? filePath : 'content/' + filePath;
+            // Open PDF directly in an iframe (browser's built-in PDF viewer)
+            const win = document.createElement('div');
+            win.className = 'app-window';
+            win.style.zIndex = 1000 + document.querySelectorAll('.app-window').length;
+            win.style.width = winWidth;
+            win.style.height = winHeight;
+            win.style.left = winLeft;
+            win.style.top = winTop;
+            win.style.position = 'absolute';
+            win.dataset.filePath = filePath;
+            const displayName = decodeURIComponent(filename);
+            win.innerHTML = `
+        <div class="title-bar">
+            <span class="window-icon"><i class="fa-regular fa-file-pdf"></i></span> <span class="title">${displayName}</span>
+            <div class="window-controls">
+                <button class="control-btn minimize" aria-label="Minimize"><span>—</span></button>
+                <button class="control-btn maximize" aria-label="Maximize"><span>□</span></button>
+                <button class="control-btn close" aria-label="Close"><span>✕</span></button>
+            </div>
+        </div>
+        <div class="window-content" style="position:relative;">
+            <iframe src="${pdfPath}" style="width:100%;height:100%;border:none;" allowfullscreen></iframe>
+        </div>
+        <div class="resize-handle resize-handle-nw"></div>
+        <div class="resize-handle resize-handle-n"></div>
+        <div class="resize-handle resize-handle-ne"></div>
+        <div class="resize-handle resize-handle-e"></div>
+        <div class="resize-handle resize-handle-se"></div>
+        <div class="resize-handle resize-handle-s"></div>
+        <div class="resize-handle resize-handle-sw"></div>
+        <div class="resize-handle resize-handle-w"></div>
+    `;
+            document.body.appendChild(win);
+            // Add tab
+            const tab = document.createElement('span');
+            tab.className = 'status-tab';
+            tab.textContent = displayName;
+            document.getElementById('statusTabs').appendChild(tab);
+            // Add to appWindows and initialize
+            const appWin = new AppWindow(win);
+            appWindows.push(appWin);
+            // Bring the new window to the top
+            appWin.bringToFront();
+            // Tab switching logic
+            tab.addEventListener('click', function () {
+                document.querySelectorAll('.status-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                win.style.display = '';
+            });
+            // Show this window and tab (do not hide others)
+            document.querySelectorAll('.status-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            win.style.display = '';
+        }
+
+        function openMarkdownAppWindow(filename, filePath) {
+            // Check if already open
+            const existingIdx = appWindows.findIndex(winObj => winObj.appWindow.dataset && winObj.appWindow.dataset.filePath === filePath);
+            if (existingIdx !== -1) {
+                appWindows[existingIdx].bringToFront();
+                appWindows[existingIdx].appWindow.style.display = '';
+                return;
+            }
+            const { winWidth, winHeight, winLeft, winTop } = getTilingForNewTab();
+            // Always use content/ prefix unless already present
+            let mdPath = filePath.startsWith('content/') ? filePath : 'content/' + filePath;
+            // Create the window first (empty content)
+            const win = document.createElement('div');
+            win.className = 'app-window';
+            win.style.zIndex = 1000 + document.querySelectorAll('.app-window').length;
+            win.style.width = winWidth;
+            win.style.height = winHeight;
+            win.style.left = winLeft;
+            win.style.top = winTop;
+            win.style.position = 'absolute';
+            win.dataset.filePath = filePath;
+            const displayName = decodeURIComponent(filename);
+            win.innerHTML = `
+        <div class="title-bar">
+            <span class="window-icon"><i class="fa-brands fa-markdown"></i></span> <span class="title">${displayName}</span>
+            <div class="window-controls">
+                <button class="control-btn minimize" aria-label="Minimize"><span>—</span></button>
+                <button class="control-btn maximize" aria-label="Maximize"><span>□</span></button>
+                <button class="control-btn close" aria-label="Close"><span>✕</span></button>
+            </div>
+        </div>
+        <div class="window-content markdown-content" style="overflow:auto;">Loading...</div>
+        <div class="resize-handle resize-handle-nw"></div>
+        <div class="resize-handle resize-handle-n"></div>
+        <div class="resize-handle resize-handle-ne"></div>
+        <div class="resize-handle resize-handle-e"></div>
+        <div class="resize-handle resize-handle-se"></div>
+        <div class="resize-handle resize-handle-s"></div>
+        <div class="resize-handle resize-handle-sw"></div>
+        <div class="resize-handle resize-handle-w"></div>
+    `;
+            document.body.appendChild(win);
+            // Add tab
+            const tab = document.createElement('span');
+            tab.className = 'status-tab';
+            tab.textContent = displayName;
+            document.getElementById('statusTabs').appendChild(tab);
+            // Add to appWindows and initialize
+            const appWin = new AppWindow(win);
+            appWindows.push(appWin);
+            appWin.bringToFront();
+            // Tab switching logic
+            tab.addEventListener('click', function () {
+                document.querySelectorAll('.status-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                win.style.display = '';
+            });
+            document.querySelectorAll('.status-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            win.style.display = '';
+            // Fetch and render markdown
+            fetch(mdPath)
+                .then(res => res.text())
+                .then(md => {
+                    // Use marked.js to render markdown with all links opening in a new tab
+                    if (window.marked) {
+                        const renderer = new window.marked.Renderer();
+                        renderer.link = function (href, title, text) {
+                            return `<a href="${href["href"]}" target="_blank" rel="noopener noreferrer">${href["text"]}</a>`;
+                        };
+                        win.querySelector('.markdown-content').innerHTML = window.marked.parse(md, { renderer });
+                    } else {
+                        win.querySelector('.markdown-content').textContent = md;
+                    }
+                })
+                .catch(() => {
+                    win.querySelector('.markdown-content').textContent = 'Failed to load file.';
+                });
+        }
+
+        function openTextAppWindow(filename, filePath) {
+            // Check if already open
+            const existingIdx = appWindows.findIndex(winObj => winObj.appWindow.dataset && winObj.appWindow.dataset.filePath === filePath);
+            if (existingIdx !== -1) {
+                appWindows[existingIdx].bringToFront();
+                appWindows[existingIdx].appWindow.style.display = '';
+                return;
+            }
+            const { winWidth, winHeight, winLeft, winTop } = getTilingForNewTab();
+            // Create the window first (empty content)
+            const win = document.createElement('div');
+            win.className = 'app-window';
+            win.style.zIndex = 1000 + document.querySelectorAll('.app-window').length;
+            win.style.width = winWidth;
+            win.style.height = winHeight;
+            win.style.left = winLeft;
+            win.style.top = winTop;
+            win.style.position = 'absolute';
+            win.dataset.filePath = filePath;
+            const displayName = decodeURIComponent(filename);
+            win.innerHTML = `
+        <div class="title-bar">
+            <span class="window-icon"><i class="fa-solid fa-file-lines"></i></span> <span class="title">${displayName}</span>
+            <div class="window-controls">
+                <button class="control-btn minimize" aria-label="Minimize"><span>—</span></button>
+                <button class="control-btn maximize" aria-label="Maximize"><span>□</span></button>
+                <button class="control-btn close" aria-label="Close"><span>✕</span></button>
+            </div>
+        </div>
+        <div class="window-content text-content" style="overflow:auto;padding:1em;white-space:pre;">Loading...</div>
+        <div class="resize-handle resize-handle-nw"></div>
+        <div class="resize-handle resize-handle-n"></div>
+        <div class="resize-handle resize-handle-ne"></div>
+        <div class="resize-handle resize-handle-e"></div>
+        <div class="resize-handle resize-handle-se"></div>
+        <div class="resize-handle resize-handle-s"></div>
+        <div class="resize-handle resize-handle-sw"></div>
+        <div class="resize-handle resize-handle-w"></div>
+    `;
+            document.body.appendChild(win);
+            // Add tab
+            const tab = document.createElement('span');
+            tab.className = 'status-tab';
+            tab.textContent = displayName;
+            document.getElementById('statusTabs').appendChild(tab);
+            // Add to appWindows and initialize
+            const appWin = new AppWindow(win);
+            appWindows.push(appWin);
+            appWin.bringToFront();
+            // Tab switching logic
+            tab.addEventListener('click', function () {
+                document.querySelectorAll('.status-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                win.style.display = '';
+            });
+            document.querySelectorAll('.status-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            win.style.display = '';
+            // Fetch and render text
+            fetch('content/' + filePath)
+                .then(res => res.text())
+                .then(txt => {
+                    win.querySelector('.text-content').textContent = txt;
+                })
+                .catch(() => {
+                    win.querySelector('.text-content').textContent = 'Failed to load file.';
+                });
+        }
+
+        function openImageAppWindow(filename, filePath) {
+            // Check if already open
+            const existingIdx = appWindows.findIndex(winObj => winObj.appWindow.dataset && winObj.appWindow.dataset.filePath === filePath);
+            if (existingIdx !== -1) {
+                appWindows[existingIdx].bringToFront();
+                appWindows[existingIdx].appWindow.style.display = '';
+                return;
+            }
+            const { winWidth, winHeight, winLeft, winTop } = getTilingForNewTab();
+            // Always use content/ prefix unless already present
+            let imgPath = filePath.startsWith('content/') ? filePath : 'content/' + filePath;
+            // Create the window
+            const win = document.createElement('div');
+            win.className = 'app-window';
+            win.style.zIndex = 1000 + document.querySelectorAll('.app-window').length;
+            win.style.width = winWidth;
+            win.style.height = winHeight;
+            win.style.left = winLeft;
+            win.style.top = winTop;
+            win.style.position = 'absolute';
+            win.dataset.filePath = filePath;
+            const displayName = decodeURIComponent(filename);
+            win.innerHTML = `
+        <div class="title-bar">
+            <span class="window-icon"><i class="fa-regular fa-file-image"></i></span> <span class="title">${displayName}</span>
+            <div class="window-controls">
+                <button class="control-btn minimize" aria-label="Minimize"><span>—</span></button>
+                <button class="control-btn maximize" aria-label="Maximize"><span>□</span></button>
+                <button class="control-btn close" aria-label="Close"><span>✕</span></button>
+            </div>
+        </div>
+        <div class="window-content image-content" style="overflow:auto;display:flex;align-items:center;justify-content:center;background:#222;position:relative;">
+            <div class="image-toolbar" style="position:absolute;top:10px;right:10px;z-index:2;display:flex;gap:8px;">
+                <button class="img-zoom-in" title="Zoom In" style="font-size:18px;padding:2px 8px;">+</button>
+                <button class="img-zoom-out" title="Zoom Out" style="font-size:18px;padding:2px 8px;">−</button>
+                <button class="img-reset" title="Reset" style="font-size:18px;padding:2px 8px;">⟳</button>
+            </div>
+            <img src="${imgPath}" alt="${filename}" class="zoomable-img" style="max-width:100%;max-height:100%;object-fit:contain;background:#fff;border-radius:6px;box-shadow:0 2px 8px rgba(0,0,0,0.12);cursor:grab;transition:transform 0.15s;">
+        </div>
+        <div class="resize-handle resize-handle-nw"></div>
+        <div class="resize-handle resize-handle-n"></div>
+        <div class="resize-handle resize-handle-ne"></div>
+        <div class="resize-handle resize-handle-e"></div>
+        <div class="resize-handle resize-handle-se"></div>
+        <div class="resize-handle resize-handle-s"></div>
+        <div class="resize-handle resize-handle-sw"></div>
+        <div class="resize-handle resize-handle-w"></div>
+    `;
+            document.body.appendChild(win);
+            // Add tab
+            const tab = document.createElement('span');
+            tab.className = 'status-tab';
+            tab.textContent = displayName;
+            document.getElementById('statusTabs').appendChild(tab);
+            // Add to appWindows and initialize
+            const appWin = new AppWindow(win);
+            appWindows.push(appWin);
+            appWin.bringToFront();
+            // Tab switching logic
+            tab.addEventListener('click', function () {
+                document.querySelectorAll('.status-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                win.style.display = '';
+            });
+            document.querySelectorAll('.status-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            win.style.display = '';
+            // --- Zoom & Pan logic ---
+            const img = win.querySelector('.zoomable-img');
+            let scale = 1, panX = 0, panY = 0, isPanning = false, startX = 0, startY = 0;
+            function updateTransform() {
+                img.style.transform = `scale(${scale}) translate(${panX / scale}px,${panY / scale}px)`;
+            }
+            win.querySelector('.img-zoom-in').onclick = function (e) {
+                scale = Math.min(scale * 1.2, 10);
+                updateTransform();
+            };
+            win.querySelector('.img-zoom-out').onclick = function (e) {
+                scale = Math.max(scale / 1.2, 0.1);
+                updateTransform();
+            };
+            win.querySelector('.img-reset').onclick = function (e) {
+                scale = 1; panX = 0; panY = 0;
+                updateTransform();
+            };
+            img.addEventListener('mousedown', function (e) {
+                isPanning = true;
+                startX = e.clientX - panX;
+                startY = e.clientY - panY;
+                img.style.cursor = 'grabbing';
+                e.preventDefault();
+            });
+            document.addEventListener('mousemove', function (e) {
+                if (!isPanning) return;
+                panX = e.clientX - startX;
+                panY = e.clientY - startY;
+                updateTransform();
+            });
+            document.addEventListener('mouseup', function () {
+                if (isPanning) {
+                    isPanning = false;
+                    img.style.cursor = 'grab';
+                }
+            });
+            // Mouse wheel zoom (centered on mouse)
+            img.addEventListener('wheel', function (e) {
+                e.preventDefault();
+                const prevScale = scale;
+                if (e.deltaY < 0) scale = Math.min(scale * 1.1, 10);
+                else scale = Math.max(scale / 1.1, 0.1);
+                // Adjust pan so zoom is centered on mouse
+                const rect = img.getBoundingClientRect();
+                const mx = e.clientX - rect.left;
+                const my = e.clientY - rect.top;
+                panX -= (mx - panX / prevScale) * (scale / prevScale - 1);
+                panY -= (my - panY / prevScale) * (scale / prevScale - 1);
+                updateTransform();
+            }, { passive: false });
+            // Double click to reset
+            img.addEventListener('dblclick', function () {
+                scale = 1; panX = 0; panY = 0;
+                updateTransform();
+            });
+        }
+
+        // --- File Manager Logic ---
+        function createFileTreeNode(node) {
+            const li = document.createElement('li');
+            li.className = 'file-tree-node ' + node.type;
+            const icon = document.createElement('span');
+            icon.className = 'file-tree-icon';
+            // Use different icons for file types
+            if (node.type === 'folder') {
+                icon.innerHTML = '<i class="fa-solid fa-folder"></i>';
+            } else if (node.type === 'markdown') {
+                icon.innerHTML = '<i class="fa-brands fa-markdown"></i>';
+            } else if (node.type === 'pdf') {
+                icon.innerHTML = '<i class="fa-regular fa-file-pdf"></i>';
+            } else if (node.type === 'image') {
+                icon.innerHTML = '<i class="fa-regular fa-file-image"></i>';
+            } else if (node.type === 'video') {
+                icon.innerHTML = '<i class="fa-regular fa-file-video"></i>';
+            } else if (node.type === 'html') {
+                icon.innerHTML = '<i class="fa-brands fa-html5"></i>';
+            } else {
+                icon.innerHTML = '<i class="fa-solid fa-file"></i>';
+            }
+            const label = document.createElement('span');
+            label.className = 'file-tree-label';
+            label.textContent = decodeURIComponent(node.name);
+            li.appendChild(icon);
+            li.appendChild(label);
+            if (node.type === 'folder' && node.children && node.children.length > 0) {
+                li.classList.add('collapsed');
+                const ul = document.createElement('ul');
+                ul.className = 'file-tree-children';
+                node.children.forEach(child => {
+                    ul.appendChild(createFileTreeNode(child));
+                });
+                li.appendChild(ul);
+                // Only show top-level: children hidden by default (collapsed)
+                ul.style.display = 'none';
+                // Expand/collapse on click (icon or label)
+                label.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    if (ul.style.display === 'none') {
+                        ul.style.display = '';
+                        li.classList.remove('collapsed');
+                    } else {
+                        ul.style.display = 'none';
+                        li.classList.add('collapsed');
+                    }
+                });
+                icon.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    if (ul.style.display === 'none') {
+                        ul.style.display = '';
+                        li.classList.remove('collapsed');
+                    } else {
+                        ul.style.display = 'none';
+                        li.classList.add('collapsed');
+                    }
+                });
+            } else if (node.type === 'pdf') {
+                label.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    openPdfAppWindow(node.name, node.path);
+                });
+            } else if (node.type === 'image') {
+                label.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    openImageAppWindow(node.name, node.path);
+                });
+            } else if (node.type === 'markdown') {
+                label.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    openMarkdownAppWindow(node.name, node.path);
+                });
+            } else if (node.type !== 'folder') {
+                label.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    alert('File selected: ' + node.name + '\nPath: ' + node.path);
+                });
+            }
+            return li;
+        }
+
+        function renderFileManagerTree(hierarchy) {
+            const root = document.getElementById('file-manager-root');
+            root.innerHTML = '';
+            const ul = document.createElement('ul');
+            ul.className = 'file-tree-root';
+            // hierarchy is now an array
+            hierarchy.forEach(item => {
+                ul.appendChild(createFileTreeNode(item));
+            });
+            root.appendChild(ul);
+        }
+
+        fetch('content-hierarchy.json')
+            .then(res => res.json())
+            .then(data => {
+                window.fileManagerHierarchy = data;
+                renderFileManagerTree(data);
+            });
+
+        window.addEventListener('DOMContentLoaded', function () {
+            // By default, open hello.md
+            openMarkdownAppWindow('hello.md', 'hello.md');
+        });
+
+        // --- Enable internal markdown links to open in new app windows ---
+        document.addEventListener('click', function (e) {
+            // Only handle clicks inside markdown-content
+            const link = e.target.closest('.markdown-content a');
+            if (!link) return;
+            let href = link.getAttribute('href');
+            // Only intercept relative links (not http/https/mailto/etc)
+            if (!href || /^(https?:|mailto:|#|\/)/i.test(href)) return;
+            // Prevent default navigation
+            e.preventDefault();
+            // --- Parse relative path (., ..) based on current markdown file path ---
+            let basePath = null;
+            // Try to get the current markdown window's filePath
+            const win = link.closest('.app-window');
+            if (win && win.dataset && win.dataset.filePath) {
+                basePath = win.dataset.filePath;
+            }
+            function resolveRelativePath(base, rel) {
+                if (!base) return rel.replace(/^\.\//, '');
+                let baseParts = base.split('/');
+                baseParts.pop(); // remove filename
+                let relParts = rel.split('/');
+                for (let part of relParts) {
+                    if (part === '.' || part === '') continue;
+                    if (part === '..') {
+                        if (baseParts.length > 0) baseParts.pop();
+                    } else {
+                        baseParts.push(part);
+                    }
+                }
+                return baseParts.join('/');
+            }
+            let resolvedHref = resolveRelativePath(basePath, href.replace(/\/$/, ''));
+            // Determine file type by extension
+            const ext = resolvedHref.split('.').pop().toLowerCase();
+            if (ext === 'md' || ext === 'markdown') {
+                openMarkdownAppWindow(resolvedHref.split('/').pop(), resolvedHref);
+            } else if (ext === 'pdf') {
+                openPdfAppWindow(resolvedHref.split('/').pop(), resolvedHref);
+            } else if (["png", "jpg", "jpeg", "gif", "svg", "bmp", "webp"].includes(ext)) {
+                openImageAppWindow(resolvedHref.split('/').pop(), resolvedHref);
+            } else if (["txt", "csv", "tsv", "json", "log"].includes(ext)) {
+                openTextAppWindow(resolvedHref.split('/').pop(), resolvedHref);
+            } else {
+                // Try to open as a folder if the path matches a folder in the hierarchy
+                if (window.fileManagerHierarchy) {
+                    function findFolderByPath(nodes, path) {
+                        for (const node of nodes) {
+                            if (node.type === 'folder' && node.path === resolvedHref) return node;
+                            if (node.type === 'folder' && node.children) {
+                                const found = findFolderByPath(node.children, path);
+                                if (found) return found;
+                            }
+                        }
+                        return null;
+                    }
+                    const folderNode = findFolderByPath(window.fileManagerHierarchy, resolvedHref);
+                    if (folderNode) {
+                        openFolderViewerAppWindow(folderNode.name, folderNode.path, folderNode.children);
+                        return;
+                    }
+                }
+                // fallback: open as text
+                openTextAppWindow(resolvedHref.split('/').pop(), resolvedHref);
+            }
+        });
+
+        function openFolderViewerAppWindow(folderName, folderPath, children) {
+            // Check if already open
+            const existingIdx = appWindows.findIndex(winObj => winObj.appWindow.dataset && winObj.appWindow.dataset.folderPath === folderPath);
+            if (existingIdx !== -1) {
+                appWindows[existingIdx].bringToFront();
+                appWindows[existingIdx].appWindow.style.display = '';
+                return;
+            }
+            const { winWidth, winHeight, winLeft, winTop } = getTilingForNewTab();
+            const win = document.createElement('div');
+            win.className = 'app-window';
+            win.style.zIndex = 1000 + document.querySelectorAll('.app-window').length;
+            win.style.width = winWidth;
+            win.style.height = winHeight;
+            win.style.left = winLeft;
+            win.style.top = winTop;
+            win.style.position = 'absolute';
+            win.dataset.folderPath = folderPath;
+            win.innerHTML = `
+        <div class="title-bar">
+            <span class="window-icon"><i class="fa-solid fa-folder"></i></span> <span class="title">${folderName}</span>
+            <div class="window-controls">
+                <button class="control-btn minimize" aria-label="Minimize"><span>—</span></button>
+                <button class="control-btn maximize" aria-label="Maximize"><span>□</span></button>
+                <button class="control-btn close" aria-label="Close"><span>✕</span></button>
+            </div>
+        </div>
+        <div class="window-content folder-viewer-content" style="overflow:auto;padding:1.5em 1.5em 1em 1.5em;">
+            <div class="folder-viewer-toolbar" style="margin-bottom:1em;display:flex;align-items:center;gap:1em;"></div>
+            <div class="folder-grid"></div>
+        </div>
+        <div class="resize-handle resize-handle-nw"></div>
+        <div class="resize-handle resize-handle-n"></div>
+        <div class="resize-handle resize-handle-ne"></div>
+        <div class="resize-handle resize-handle-e"></div>
+        <div class="resize-handle resize-handle-se"></div>
+        <div class="resize-handle resize-handle-s"></div>
+        <div class="resize-handle resize-handle-sw"></div>
+        <div class="resize-handle resize-handle-w"></div>
+    `;
+            document.body.appendChild(win);
+            // Add tab
+            const tab = document.createElement('span');
+            tab.className = 'status-tab';
+            tab.textContent = folderName;
+            document.getElementById('statusTabs').appendChild(tab);
+            // Add to appWindows and initialize
+            const appWin = new AppWindow(win);
+            appWindows.push(appWin);
+            appWin.bringToFront();
+            tab.addEventListener('click', function () {
+                document.querySelectorAll('.status-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                win.style.display = '';
+            });
+            document.querySelectorAll('.status-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            win.style.display = '';
+
+            // --- Internal navigation logic ---
+            function renderFolderGrid(currentPath, currentChildren) {
+                const grid = win.querySelector('.folder-grid');
+                const toolbar = win.querySelector('.folder-viewer-toolbar');
+                // Update title
+                win.querySelector('.title').textContent = decodeURIComponent(currentPath.split('/').pop() || currentPath);
+                // Go Up button with full path
+                toolbar.innerHTML = '';
+                if (currentPath && currentPath !== '' && currentPath !== '.' && currentPath !== '/') {
+                    const upBtn = document.createElement('button');
+                    let parentPath = currentPath.split('/').slice(0, -1).join('/');
+                    if (parentPath === '') parentPath = '.';
+                    upBtn.textContent = 'Go Up';
+                    upBtn.className = 'go-up-btn';
+                    upBtn.style = 'padding:0.3em 1em;border-radius:5px;background:#eee;color:#333;border:1px solid #bbb;cursor:pointer;';
+                    upBtn.onclick = function () {
+                        let parentNode = findFolderByPath(window.fileManagerHierarchy, parentPath);
+                        if (parentNode) {
+                            renderFolderGrid(parentNode.path, parentNode.children || []);
+                        } else if (parentPath === '.' || parentPath === '' || parentPath === '/') {
+                            renderFolderGrid('', window.fileManagerHierarchy);
+                        }
+                    };
+                    toolbar.appendChild(upBtn);
+                    // Show full path next to Go Up
+                    const pathSpan = document.createElement('span');
+                    pathSpan.textContent = ' ' + parentPath.replace(/^\.?\/?/, '') + (parentPath && parentPath !== '.' ? '/' : '');
+                    pathSpan.style = 'color:#888;font-size:0.98em;margin-left:0.7em;user-select:text;';
+                    toolbar.appendChild(pathSpan);
+                } else {
+                    // At root, show just the path
+                    const pathSpan = document.createElement('span');
+                    pathSpan.textContent = ' /';
+                    pathSpan.style = 'color:#888;font-size:0.98em;margin-left:0.7em;user-select:text;';
+                    toolbar.appendChild(pathSpan);
+                }
+                // Render grid
+                grid.innerHTML = '';
+                if (!currentChildren || !currentChildren.length) {
+                    grid.innerHTML = '<div style="color:#888;text-align:center;font-size:1.1em;">(Empty folder)</div>';
+                    return;
+                }
+                currentChildren.forEach(child => {
+                    const item = document.createElement('div');
+                    item.className = 'folder-grid-item ' + child.type;
+                    let iconHtml = '';
+                    let previewHtml = '';
+                    if (child.type === 'folder') iconHtml = '<i class="fa-solid fa-folder"></i>';
+                    else if (child.type === 'markdown') iconHtml = '<i class="fa-brands fa-markdown"></i>';
+                    else if (child.type === 'pdf') iconHtml = '<i class="fa-regular fa-file-pdf"></i>';
+                    else if (child.type === 'image') {
+                        let imgSrc = child.path.startsWith('content/') ? child.path : 'content/' + child.path;
+                        previewHtml = `<img src="${imgSrc}" alt="${child.name}" class="folder-grid-preview-img">`;
+                    }
+                    else if (child.type === 'video') iconHtml = '<i class="fa-regular fa-file-video"></i>';
+                    else if (child.type === 'html') iconHtml = '<i class="fa-brands fa-html5"></i>';
+                    else iconHtml = '<i class="fa-solid fa-file"></i>';
+                    item.innerHTML = `<div class="folder-grid-icon">${iconHtml}${previewHtml}</div><div class="folder-grid-label">${decodeURIComponent(child.name)}</div>`;
+                    item.title = decodeURIComponent(child.name);
+                    // Single click folder: navigate in-place
+                    if (child.type === 'folder') {
+                        item.addEventListener('click', function (e) {
+                            e.stopPropagation();
+                            renderFolderGrid(child.path, child.children || []);
+                        });
+                    } else {
+                        // Single click: open file in new window
+                        item.addEventListener('click', function (e) {
+                            e.stopPropagation();
+                            if (child.type === 'markdown') {
+                                openMarkdownAppWindow(child.name, child.path);
+                            } else if (child.type === 'pdf') {
+                                openPdfAppWindow(child.name, child.path);
+                            } else if (child.type === 'image') {
+                                openImageAppWindow(child.name, child.path);
+                            } else {
+                                openTextAppWindow(child.name, child.path);
+                            }
+                        });
+                    }
+                    grid.appendChild(item);
+                });
+            }
+            // Helper to find folder node by path
+            function findFolderByPath(nodes, path) {
+                if (!nodes) return null;
+                for (const node of nodes) {
+                    if (node.type === 'folder' && node.path === path) return node;
+                    if (node.type === 'folder' && node.children) {
+                        const found = findFolderByPath(node.children, path);
+                        if (found) return found;
+                    }
+                }
+                return null;
+            }
+            // Initial render
+            renderFolderGrid(folderPath, children);
+        }
+        // Make HOME desktop shortcut open the HOME folder viewer on click or double-click
+        function openHomeFolderFromDesktop() {
+            if (window.fileManagerHierarchy && Array.isArray(window.fileManagerHierarchy) && window.fileManagerHierarchy.length > 0) {
+                // Open the root (content) folder, which is the top-level array
+                openFolderViewerAppWindow('content', '', window.fileManagerHierarchy);
+            }
+        }
+        const desktopHomeShortcut = document.getElementById('desktop-home-shortcut');
+        if (desktopHomeShortcut) {
+            desktopHomeShortcut.addEventListener('dblclick', function(e) {
+                e.stopPropagation();
+                openHomeFolderFromDesktop();
+            });
+            desktopHomeShortcut.addEventListener('click', function(e) {
+                // Also allow single click for accessibility
+                e.stopPropagation();
+                openHomeFolderFromDesktop();
+            });
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </body>
 
 </html>
