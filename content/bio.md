@@ -1,12 +1,12 @@
 # Ziyue Cheng
 
-I am currently a PhD student at the [faculty of health science](https://healthsci.mcmaster.ca/) of [McMaster University](https://www.mcmaster.ca/), supervised by [Prof. Hong Han](https://experts.mcmaster.ca/display/hanh33). 
+I am a PhD student at the [faculty of health science](https://healthsci.mcmaster.ca/) of [McMaster University](https://www.mcmaster.ca/), supervised by [Prof. Hong Han](https://experts.mcmaster.ca/display/hanh33). 
 
 Currently, I am working on **single-cell sequencing** and **spatial transcriptomics** to study a malignant brain tumor called **glioblastoma**. 
 
 I am also interested in **developing computational methods** to analyze single-cell sequencing data. But it requires the knowledge of both biology and computer science, which is a tough nut to crack.
 
-I am currently learning discrete mathematics, linear algebra, and probability theory to improve my mathematical foundation. I am also learning graph theory to catch up with the latest research in **pangenome** analysis and other topology-based methods.
+I am now learning discrete mathematics, linear algebra, and probability theory to improve my mathematical foundation. I am also learning graph theory to catch up with the latest research in **pangenome** analysis and other topology-based methods.
 
 ## Education
 
