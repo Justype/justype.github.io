@@ -2,6 +2,7 @@
 
 | Project | Description |
 | --- | --- |
+| [easysci_pipeline](https://github.com/Justype/easysci_pipeline/) | A snakemake EasySci RNA pipeline |
 | [Bioinfo](https://www.justype.net/bioinfo/) | A wiki-like knowledge base for bioinformatics (ongoing) |
 | [modules](https://github.com/Justype/modules) | Using LMod or Environment-Modules to manage bioinfo software dependencies |
 | [HPC-tips](https://github.com/Justype/HPC-tips) | Tips and tricks for using HPC clusters (ongoing) |
