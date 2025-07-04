@@ -2,7 +2,7 @@
 
 This folder contains some of my created SVGs. They are mostly for fun and practice, but I hope you enjoy them!
 
-## MGR
+## MGR meguru aneki
 
 The reason I created this is that I wanted to build a game sharing website. But currently, it is discontinued due to the lack of time and resources.
 
