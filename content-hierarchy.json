@@ -32,6 +32,11 @@
             "path": "others/my_digit_arts/DNA_on_chip.svg"
           },
           {
+            "name": "DNA_on_chip_gray.svg",
+            "type": "image",
+            "path": "others/my_digit_arts/DNA_on_chip_gray.svg"
+          },
+          {
             "name": "MGR16x16.svg",
             "type": "image",
             "path": "others/my_digit_arts/MGR16x16.svg"
